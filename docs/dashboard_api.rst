@@ -8,30 +8,33 @@ Dashboard API
 
 This section describe the API of the Grappelli dashboard and dashboard modules.
 
-The ``Dashboard`` class
------------------------
+The Dashboard class
+-------------------
 
 Base class for dashboards.
 The dashboard class is a simple python list that has two additional
 properties:
 
 ``title``
-    | The dashboard title, by default, it is displayed above the dashboard in a ``h2`` tag.
-    | Default: 'Dashboard'
+    The dashboard title, by default, it is displayed above the dashboard in a ``h2`` tag.
+    Default: ``Dashboard``
 
 ``template``
-    | The template used to render the dashboard.
-    | Default: 'grappelli/dashboard/dashboard.html'
+    The template used to render the dashboard.
+    Default: ``grappelli/dashboard/dashboard.html``
 
-Here's an example of a custom dashboard::
+Here's an example of a custom dashboard:
+
+.. code-block:: python
 
     from django.core.urlresolvers import reverse
     from django.utils.translation import ugettext_lazy as _
     from grappelli.dashboard import modules, Dashboard
-    
+
     class MyDashboard(Dashboard):
         def __init__(self, **kwargs):
-            
+            Dashboard.__init__(self, **kwargs)
+
             # append an app list module for "Applications"
             self.children.append(modules.AppList(
                 title=_('Applications'),
@@ -39,7 +42,7 @@ Here's an example of a custom dashboard::
                 collapsible=True,
                 exclude=('django.contrib.*',),
             ))
-            
+
             # append an app list module for "Administration"
             self.children.append(modules.AppList(
                 title=_('Administration'),
@@ -47,7 +50,7 @@ Here's an example of a custom dashboard::
                 collapsible=True,
                 models=('django.contrib.*',),
             ))
-            
+
             # append a recent actions module
             self.children.append(modules.RecentActions(
                 title=_('Recent Actions'),
@@ -56,51 +59,53 @@ Here's an example of a custom dashboard::
                 limit=5,
             ))
 
-The ``DashboardModule`` class
------------------------------
+The DashboardModule class
+-------------------------
 
 Base class for all dashboard modules.
 Dashboard modules have the following properties:
 
 ``collapsible``
-    | Boolean that determines whether the module is collapsible.
-    | Default: ``True``
+    Boolean that determines whether the module is collapsible.
+    Default: ``True``
 
 ``column`` (required)
-    | Integer that corresponds to the column.
-    | Default: None
+    Integer that corresponds to the column.
+    Default: ``None``
 
 ``title``
-    | String that contains the module title, make sure you use the django gettext functions if your application is multilingual.
-    | Default: ''
+    String that contains the module title, make sure you use the django gettext functions if your application is multilingual.
+    Set to ``''`` if you need to suppress the title.
 
 ``css_classes``
-    | A list of css classes to be added to the module ``div`` class attribute.
-    | Default: ``None``
+    A list of css classes to be added to the module ``div`` class attribute.
+    Default: ``None``
 
 ``pre_content``
-    | Text or HTML content to display above the module content.
-    | Default: ``None``
+    Text or HTML content to display above the module content.
+    Default: ``None``
 
 ``content``
-    | The module text or HTML content.
-    | Default: ``None``
+    The module text or HTML content.
+    Default: ``None``
 
 ``post_content``
-    | Text or HTML content to display under the module content.
-    | Default: ``None``
+    Text or HTML content to display under the module content.
+    Default: ``None``
 
 ``template``
-    | The template used to render the module. 
-    | Default: 'grappelli/dashboard/module.html'
+    The template used to render the module.
+    Default: ``grappelli/dashboard/module.html``
 
-The ``Group`` class
--------------------
+The Group class
+---------------
 
-Represents a group of modules::
+Represents a group of modules:
+
+.. code-block:: python
 
     from grappelli.dashboard import modules, Dashboard
-    
+
     class MyDashboard(Dashboard):
         def __init__(self, **kwargs):
             Dashboard.__init__(self, **kwargs)
@@ -120,8 +125,8 @@ Represents a group of modules::
                 ]
             ))
 
-The ``LinkList`` class
-----------------------
+The LinkList class
+------------------
 
 A module that displays a list of links.
 
@@ -143,16 +148,18 @@ following keys:
 
 Children can also be iterables (lists or tuples) of length 2, 3 or 4.
 
-Here's an example of building a link list module::
+Here's an example of building a link list module:
+
+.. code-block:: python
 
     from grappelli.dashboard import modules, Dashboard
-    
+
     class MyDashboard(Dashboard):
         def __init__(self, **kwargs):
             Dashboard.__init__(self, **kwargs)
-            
+
             self.children.append(modules.LinkList(
-                layout='inline',
+                title='Links',
                 column=2,
                 children=(
                     {
@@ -166,8 +173,8 @@ Here's an example of building a link list module::
                 )
             ))
 
-The ``AppList`` class
----------------------
+The AppList class
+-----------------
 
 Module that lists installed apps and their models.
 As well as the :class:`~grappelli.dashboard.modules.DashboardModule`
@@ -186,14 +193,16 @@ has two extra properties:
 
 If no models/exclude list is provided, **all apps** are shown.
 
-Here's an example of building an app list module::
+Here's an example of building an app list module:
+
+.. code-block:: python
 
     from grappelli.dashboard import modules, Dashboard
-    
+
     class MyDashboard(Dashboard):
         def __init__(self, **kwargs):
             Dashboard.__init__(self, **kwargs)
-            
+
             # will only list the django.contrib apps
             self.children.append(modules.AppList(
                 title='Administration',
@@ -208,13 +217,13 @@ Here's an example of building an app list module::
             ))
 
 .. note::
-    
+
     This module takes into account user permissions. For
     example, if a user has no rights to change or add a ``Group``, then
     the django.contrib.auth.Group model won't be displayed.
 
-The ``ModelList`` class
------------------------
+The ModelList class
+-------------------
 
 Module that lists a set of models.
 As well as the :class:`~grappelli.dashboard.modules.DashboardModule`
@@ -231,20 +240,22 @@ two extra arguments:
     "blog.models.BlogEntry") match an element of this list (e.g.
     "blog.*") it won't appear in the dashboard module.
 
-Here's a small example of building a model list module::
-    
+Here's a small example of building a model list module:
+
+.. code-block:: python
+
     from grappelli.dashboard import modules, Dashboard
-    
+
     class MyDashboard(Dashboard):
         def __init__(self, **kwargs):
             Dashboard.__init__(self, **kwargs)
-            
+
             self.children.append(modules.ModelList(
                 title='Several Models',
                 column=1,
                 models=('django.contrib.*',)
             ))
-            
+
             self.children.append(modules.ModelList(
                 title='Single Model',
                 column=1,
@@ -257,8 +268,8 @@ Here's a small example of building a model list module::
     example, if a user has no rights to change or add a ``Group``, then
     the django.contrib.auth.Group model won't be displayed.
 
-The ``RecentActions`` class
----------------------------
+The RecentActions class
+-----------------------
 
 Module that lists the recent actions for the current user.
 As well as the :class:`~grappelli.dashboard.modules.DashboardModule`
@@ -276,32 +287,34 @@ takes three extra keyword arguments:
     displayed.
 
 ``limit``
-    | The maximum number of children to display.
-    | Default: 10.
+    The maximum number of children to display.
+    Default: ``10``
 
-Here's an example of building a recent actions module::
+Here's an example of building a recent actions module:
+
+.. code-block:: python
 
     from grappelli.dashboard import modules, Dashboard
-    
+
     class MyDashboard(Dashboard):
         def __init__(self, **kwargs):
             Dashboard.__init__(self, **kwargs)
-            
+
             self.children.append(modules.RecentActions(
                 title='Django CMS recent actions',
                 column=3,
                 limit=5,
             ))
 
-The ``Feed`` class
-------------------
+The Feed class
+--------------
 
 Class that represents a feed dashboard module.
 
 .. note::
 
     This class requires the
-    `Universal Feed Parser module <http://www.feedparser.org/>`_, so you'll need to install it.
+    `Universal Feed Parser module <https://pypi.python.org/pypi/feedparser>`_, so you'll need to install it.
 
 As well as the :class:`~grappelli.dashboard.modules.DashboardModule`
 properties, the :class:`~grappelli.dashboard.modules.Feed` takes two
@@ -311,17 +324,19 @@ extra keyword arguments:
     The URL of the feed.
 
 ``limit``
-    | The maximum number of feed children to display.
-    | Default: ``None`` (which means that all children are displayed)
+    The maximum number of feed children to display.
+    Default: ``None`` (which means that all children are displayed)
 
-Here's an example of building a recent actions module::
+Here's an example of building a recent actions module:
+
+.. code-block:: python
 
     from grappelli.dashboard import modules, Dashboard
-    
+
     class MyDashboard(Dashboard):
         def __init__(self, **kwargs):
             Dashboard.__init__(self, **kwargs)
-            
+
             self.children.append(modules.Feed(
                 title=_('Latest Django News'),
                 feed_url='http://www.djangoproject.com/rss/weblog/',

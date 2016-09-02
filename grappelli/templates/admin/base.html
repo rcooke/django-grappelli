@@ -1,5 +1,6 @@
-{% load admin_static %}{% load url from future %}{% load i18n grp_tags %}
+{% load admin_static %}{% load i18n grp_tags %}
 <!DOCTYPE html>
+{% get_current_language as LANGUAGE_CODE %}{% get_current_language_bidi as LANGUAGE_BIDI %}
 <html lang="{{ LANGUAGE_CODE|default:"en-us" }}" {% if LANGUAGE_BIDI %}dir="rtl"{% endif %}>
 <head>
     <title>{% block title %}{% endblock %}</title>
@@ -7,8 +8,8 @@
     {% block blockbots %}<meta name="robots" content="NONE,NOARCHIVE" />{% endblock %}
     <!-- STYLESHEETS -->
     {% block stylesheets %}
-        <link href="{% static "grappelli/jquery/ui/css/custom-theme/jquery-ui-1.8.18.custom.css" %}" rel="stylesheet" type="text/css" media="screen" />
-        <link href="{% static "grappelli/stylesheets/screen.css" %}" rel="stylesheet" type="text/css" media="screen" />
+        <link href="{% static "grappelli/jquery/ui/jquery-ui.min.css" %}" rel="stylesheet" type="text/css" media="screen" />
+        <link href="{% static "grappelli/stylesheets/screen.css" %}" rel="stylesheet" type="text/css" media="all" />
         {% if LANGUAGE_BIDI %}
             <link href="{% static "grappelli/stylesheets/mueller/grid/output-rtl.css" %}" rel="stylesheet" type="text/css" media="screen" />
             <link href="{% block stylesheet_rtl %}{% static "grappelli/stylesheets/rtl.css" %}{% endblock %}" rel="stylesheet" type="text/css" media="screen" />
@@ -21,18 +22,19 @@
     <!-- JAVASCRIPTS -->
     {% block javascripts %}
         <script type="text/javascript">window.__admin_media_prefix__ = "{% filter escapejs %}{% static "grappelli/" %}{% endfilter %}";</script>
+        <script type="text/javascript">window.__admin_utc_offset__ = "{% filter escapejs %}{% now "Z" %}{% endfilter %}";</script>
         <script type="text/javascript" charset="utf-8">
             // GLOBALS
             var grappelli = {},
                 ADMIN_URL = "{% url 'admin:index' %}",
-                MODEL_URL_ARRAY = {% get_content_types %},
+                MODEL_URL_ARRAY = {% if user.is_staff %}{% get_content_types %}{% else %}[]{% endif %},
                 DATE_FORMAT = "{% get_date_format %}",
                 TIME_FORMAT = "{% get_time_format %}",
                 DATETIME_FORMAT = "{% get_datetime_format %}";
         </script>
         <!-- jQuery, jQuery-UI -->
-        <script src="{% static "grappelli/jquery/jquery-1.7.2.min.js" %}" type="text/javascript"></script>
-        <script src="{% static "grappelli/jquery/ui/js/jquery-ui-1.8.18.custom.min.js" %}" type="text/javascript"></script>
+        <script src="{% static "grappelli/jquery/jquery-2.1.4.min.js" %}" type="text/javascript"></script>
+        <script src="{% static "grappelli/jquery/ui/jquery-ui.min.js" %}" type="text/javascript"></script>
         {% if debug %}
             <!-- Grappelli Main JS -->
             <script src="{% static "grappelli/js/grappelli.js" %}" type="text/javascript"></script>
@@ -63,92 +65,94 @@
     {% block extrahead %}{% endblock %}
 </head>
 <body class="{% if is_popup %}grp-popup {% endif %}{% block bodyclass %}{% endblock %}{% if LANGUAGE_BIDI %} rtl{% endif %}">
-    <div id="grp-container">
+    <div id="container" class="grp-container">
 
-        <!-- HEADER -->
-        <header id="grp-header" class="{% block header-class %}{% endblock %}">
-            {% if not is_popup %}
+        {% block header %}
+            <!-- HEADER -->
+            <header id="grp-header" class="{% block header-class %}{% endblock %}">
+                {% if not is_popup %}
 
-                <!-- NAVIGATION -->
-                <div id="grp-navigation">
-                    <h1 id="grp-admin-title">{% if grappelli_admin_title %}{{ grappelli_admin_title }}{% else %}{% get_admin_title %}{% endif %}</h1>
-                    {% if user.is_authenticated and user.is_staff %}
-                        <ul id="grp-user-tools">
-                            <!-- Userlinks -->
-                            {% block userlinks %}
-                                <!-- Username -->
-                                <li class="grp-user-options-container grp-collapse grp-closed">
-                                    <a href="javascript://" class="user-options-handler grp-collapse-handler">{% filter force_escape %}{% firstof user.first_name user.username user.get_short_name user.get_username %}{% endfilter %}</a>
-                                    <ul class="grp-user-options">
-                                        <!-- Change Password -->
-                                        {% if user.has_usable_password %}
-                                            {% url 'admin:password_change' as password_change_url %}
-                                            {% if password_change_url %}
-                                                <li><a href="{{ password_change_url }}">
-                                            {% else %}
-                                                <li><a href="{{ root_path }}password_change/">
+                    {% block navigation %}
+                        <!-- NAVIGATION -->
+                        <div id="grp-navigation">
+                            {% block branding %}{% endblock %}
+                            {% block admin_title %}<h1 id="grp-admin-title">{% if grappelli_admin_title %}{{ grappelli_admin_title }}{% else %}{% get_admin_title %}{% endif %}</h1>{% endblock %}
+                            {% block user-tools %}
+                                {% if user.is_authenticated and user.is_staff %}
+                                    <ul id="grp-user-tools">
+                                        <!-- Userlinks -->
+                                        {% block userlinks %}
+                                            <!-- Username -->
+                                            <li class="grp-user-options-container grp-collapse grp-closed {% if request.session.original_user %}grp-switch-user-is-target{% endif %}">
+                                                <a href="javascript://" class="user-options-handler grp-collapse-handler {% if request.session.original_user %}grp-switch-user-is-target{% else %}grp-switch-user-is-original{% endif %}">{% firstof user.get_short_name user.get_username %}</a>
+                                                <ul class="grp-user-options">
+                                                    <!-- Change Password -->
+                                                    {% if user.has_usable_password %}
+                                                        <li><a href="{% url 'admin:password_change' %}" class="grp-change-password">{% trans 'Change password' %}</a></li>
+                                                    {% endif %}
+                                                    <!-- Logout -->
+                                                    <li><a href="{% url 'admin:logout' %}" class="grp-logout">{% trans 'Log out' %}</a></li>
+                                                    <!-- Switch -->
+                                                    {% switch_user_dropdown %}
+                                                </ul>
+                                            </li>
+                                            <!-- Site URL -->
+                                            {% if site_url %}
+                                                <li><a href="{{ site_url }}">{% trans 'View site' %}</a></li>
                                             {% endif %}
-                                            {% trans 'Change password' %}</a></li>
-                                        {% endif %}
-                                        <!-- Logout -->
-                                        {% url 'admin:logout' as logout_url %}
-                                        {% if logout_url %}
-                                            <li><a href="{{ logout_url }}">
-                                        {% else %}
-                                            <li><a href="{{ root_path }}logout/">
-                                        {% endif %}
-                                        {% trans 'Log out' %}</a></li>
+                                            <!-- Documentation -->
+                                            {% url 'django-admindocs-docroot' as docsroot %}
+                                            {% if docsroot %}
+                                                <li><a href="{{ docsroot }}">{% trans 'Documentation' %}</a></li>
+                                            {% endif %}
+                                        {% endblock %}
                                     </ul>
-                                </li>
-                                <!-- JS tests -->
-                                {% url 'test-index' as testindexurl %}
-                                {% if testindexurl %}
-                                    <li><a href="{{ testindexurl }}">{% trans 'Tests' %}</a></li>
-                                {% endif %}
-                                <!-- Documentation -->
-                                {% url 'django-admindocs-docroot' as docsroot %}
-                                {% if docsroot %}
-                                    <li><a href="{{ docsroot }}">{% trans 'Documentation' %}</a></li>
                                 {% endif %}
                             {% endblock %}
-                        </ul>
-                    {% endif %}
-                    <!-- Nav-Global -->
-                    {% block nav-global %}{% endblock %}
-                </div>
-                
-                <!-- CONTEXT NAVIGATION -->
-                <div id="grp-context-navigation">
-                    <nav id="grp-breadcrumbs" class="{% block breadcrumbs-class %}{% endblock %}">
-                        <header style="display:none"><h1>Breadcrumbs</h1></header>
-                        {% block breadcrumbs %}
-                            <ul>
-                                <li><a href="/">{% trans 'Home' %}</a></li>
-                                {% if title %}
-                                    <li> &rsaquo; {{ title }}</li>
-                                {% endif %}
-                            </ul>
-                        {% endblock %}
-                    </nav>
-                    <nav id="grp-page-tools">
-                        <header style="display:none"><h1>Page Tools</h1></header>
-                        {% block page-tools %}{% endblock %}
-                    </nav>
-                </div>
-            {% endif %}
-        </header>
+                            <!-- Nav-Global -->
+                            {% block nav-global %}{% endblock %}
+                        </div>
+                    {% endblock %}
+
+                    {% block context-navigation %}
+                        <!-- CONTEXT NAVIGATION -->
+                        <div id="grp-context-navigation">
+                            <nav id="grp-breadcrumbs" class="{% block breadcrumbs-class %}{% endblock %}">
+                                <header style="display:none"><h1>Breadcrumbs</h1></header>
+                                {% block breadcrumbs %}
+                                    <ul>
+                                        <li><a href="{% url 'admin:index' %}">{% trans 'Home' %}</a></li>
+                                        {% if title %}
+                                            <li> &rsaquo; {{ title }}</li>
+                                        {% endif %}
+                                    </ul>
+                                {% endblock %}
+                            </nav>
+                            <nav id="grp-page-tools">
+                                <header style="display:none"><h1>Page Tools</h1></header>
+                                {% block page-tools %}{% endblock %}
+                            </nav>
+                        </div>
+                    {% endblock %}
+
+                {% endif %}
+            </header>
+        {% endblock %}
 
         <!-- CONTENT -->
         <article id="grp-content" class="{% block content-class %}{% endblock %}">
-            
+
             <!-- MESSAGES -->
-            {% if messages %}
-                <ul class="grp-messagelist">
-                    {% for message in messages %}
-                        <li{% if message.tags %} class="grp-{{ message.tags }}"{% endif %}>{{ message }}</li>
-                    {% endfor %}
-                </ul>
-            {% endif %}
+            {% block messages %}
+                {% if messages %}
+                    <ul class="grp-messagelist">
+                        <!-- NOTE: no message|capfirst by purpose, because it does not work in some languages -->
+                        {% for message in messages %}
+                            <li{% if message.tags %} class="grp-{{ message.tags }}"{% endif %}>{{ message }}</li>
+                        {% endfor %}
+                    </ul>
+                {% endif %}
+            {% endblock %}
 
             <!-- CONTENT TITLE -->
             <header id="grp-content-title">
@@ -166,7 +170,7 @@
             </div>
 
         </article>
-        
+
         <!-- FOOTER -->
         {% block footer %}{% endblock %}
 

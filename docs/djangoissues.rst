@@ -34,12 +34,12 @@ First, the ``can_order`` attribute is not available with the admin interface. Se
 
 see http://code.djangoproject.com/ticket/14238
 
-Translating App Names
----------------------
+HTML5 input types
+-----------------
 
-It's not possible to (easily) translate the names of apps within the admin interface which leads to a strange language mix (esp. on the index page).
+There is unpredictable behaviour with certain input types (e.g. number) and Django should remove these types from our point of view (at least with the admin interface). Moreover, form validation should not be moved to the frontend of the admin interface.
 
-see http://code.djangoproject.com/ticket/3591 and http://code.djangoproject.com/ticket/14251
+see https://code.djangoproject.com/ticket/23075 (although this ticket is marked with "fixed", the behaviour is still inconsistent)
 
 The Admin Index Site
 --------------------
@@ -66,8 +66,8 @@ Autocompletes
 
 As an alternative to ``Related Lookups`` it should also be possible to implement ``Autocompletes``. |grappelli| includes ``Autocompletes``, but it should be possible without hacking the admin-interface.
 
-``help_text`` and Many-to-Many Fields
--------------------------------------
+Help text and Many-to-Many Fields
+---------------------------------
 
 The ``help_text`` doesn't show up with M2M-Fields, when using the RawID-Widget (e.g. with Autocompletes). Nothing we can do about that.
 
@@ -75,11 +75,6 @@ Searching Generic Relations
 ---------------------------
 
 It's not possible to use a ``content_object`` within search_fields.
-
-Save Object and return to Changelist
-------------------------------------
-
-When you edit an object and save it, you are redirected to an unfiltered changelist. That's pretty annoying when you've filtered the changelist before editing the object.
 
 Javascript loading
 ------------------
@@ -90,10 +85,6 @@ Admin Documentation
 -------------------
 
 The document structure of the admin_doc templates is messy (about every second template has a different structure). Therefore, it's hard to style these pages. Trying to do our best to give it a decent look though.
-
-Moreover, all admin-views lead to an error.
-
-Translation of the Admin Documentation is half-baked.
 
 HTML/CSS Framework
 ------------------

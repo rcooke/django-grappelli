@@ -45,7 +45,7 @@
     var lookup_link = function(id, val) {
         var lookuplink = $('<a class="related-lookup"></a>');
         lookuplink.attr('id', 'lookup_'+id);
-        lookuplink.attr('href', "../../../" + MODEL_URL_ARRAY[val].app + "/" + MODEL_URL_ARRAY[val].model + '/?t=id');
+        lookuplink.attr('href', window.ADMIN_URL + MODEL_URL_ARRAY[val].app + "/" + MODEL_URL_ARRAY[val].model + '/?');
         lookuplink.attr('onClick', 'return showRelatedObjectLookupPopup(this);');
         return lookuplink;
     };
@@ -66,7 +66,8 @@
         $.getJSON(options.lookup_url, {
             object_id: elem.val(),
             app_label: grappelli.get_app_label(elem),
-            model_name: grappelli.get_model_name(elem)
+            model_name: grappelli.get_model_name(elem),
+            query_string: grappelli.get_query_string(elem)
         }, function(data) {
             if (data[0].label === "") {
                 text.hide();

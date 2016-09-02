@@ -44,6 +44,28 @@
     }
 }
 
+.ui-state-default,
+.ui-widget-content .ui-state-default,
+.ui-widget-header .ui-state-default {
+    font-weight: bold;
+}
+.ui-widget-content .ui-state-default {
+    background: #CEE9F2;
+}
+.ui-state-hover,
+.ui-widget-content .ui-state-hover,
+.ui-widget-header .ui-state-hover,
+.ui-state-focus,
+.ui-widget-content .ui-state-focus,
+.ui-widget-header .ui-state-focus {
+    font-weight: bold;
+}
+.ui-state-active,
+.ui-widget-content .ui-state-active,
+.ui-widget-header .ui-state-active {
+    font-weight: bold;
+}
+
 
 
 /*  SORTABLE
@@ -137,6 +159,7 @@
     .ui-datepicker-header {
         position:relative;
         padding:.2em 0;
+        border: 1px solid #bdbdbd;
     }
     .ui-datepicker-prev, 
     .ui-datepicker-next {
@@ -229,6 +252,7 @@
                 @include border-radius($grp-border-radius);
                 &.ui-state-default {
                     color: $grp-font-color;
+                    border-color: #ccc;
                 }
                 &.ui-state-hover {
                     color: #fff !important;
@@ -241,6 +265,17 @@
                 &.ui-state-highlight {
                     border-color: #bababa;
                     background: #d6d6d6;
+                }
+            }
+            &.ui-datepicker-today {
+                a {
+                    border-color: #bababa;
+                    background: #d6d6d6;
+                }
+            }
+            &.ui-datepicker-current-day {
+                a {
+                    background: #fff;
                 }
             }
         }
@@ -389,6 +424,7 @@ button.ui-datepicker-close {
                 }
             }
             &.ui-state-active {
+                color: #444;
                 border: 1px solid #bababa !important;
                 background: #d6d6d6;
             }
@@ -402,6 +438,7 @@ button.ui-datepicker-close {
 ------------------------------------------------------------------------------------------------------ */
 
 .ui-menu {
+    z-index: 1000;
     display: block;
     margin: 0;
     padding: 2px;
@@ -427,28 +464,25 @@ button.ui-datepicker-close {
         margin: 0;
         padding: 0;
         width: 100%;
+        border: 0 !important;
         a {
             display: block;
-            margin: 0;
+            margin: 0 !important;
             padding: 3px 4px;
             color: #444;
-            font-weight: bold;
+            font-weight: bold !important;
             border: 1px solid #c7c7c7;
             @include border-radius($grp-form-field-border-radius - 1px);
             background: #cee9f2;
             cursor: pointer;
             &:hover, 
-            &.ui-state-hover, 
+            &.ui-state-hover,
+            &.ui-state-focus, 
             &.ui-state-active {
                 color: #fff;
                 border: 1px solid #333;
                 background: #444;
             }
-        }
-        a.ui-state-hover,
-        a.ui-state-active {
-            font-weight: bold;
-            margin: 0;
         }
         & + li.ui-menu-item {
             margin-top: 2px;

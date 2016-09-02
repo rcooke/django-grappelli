@@ -2,12 +2,13 @@
 
 # python imports
 from functools import wraps
+import json
 
-# try to use json (2.6+) but stay compatible with 2.5.*
 try:
-    import json
+    from django.contrib.auth import get_user_model
+    User = get_user_model()
 except ImportError:
-    from django.utils import simplejson as json
+    from django.contrib.auth.models import User
 
 # django imports
 from django import template
@@ -17,9 +18,10 @@ from django.utils.safestring import mark_safe
 from django.utils.translation import get_language
 from django.template.loader import get_template
 from django.template.context import Context
+from django.utils.translation import ugettext as _
 
 # grappelli imports
-from grappelli.settings import *
+from grappelli.settings import ADMIN_TITLE, ADMIN_URL, SWITCH_USER, SWITCH_USER_ORIGINAL, SWITCH_USER_TARGET, CLEAN_INPUT_TYPES
 
 register = template.Library()
 
@@ -42,7 +44,6 @@ def get_content_types(parser, token):
     Returns a list of installed applications and models.
     Needed for lookup of generic relationships.
     """
-    tokens = token.contents.split()
     return do_get_generic_objects()
 
 
@@ -53,6 +54,15 @@ def get_admin_title():
     Returns the Title for the Admin-Interface.
     """
     return ADMIN_TITLE
+
+
+# SITE_TITLE
+@register.simple_tag
+def get_site_title():
+    """
+    Returns the Title for the Admin-Interface.
+    """
+    return ADMIN_TITLE or _("Django site admin")
 
 
 # RETURNS CURRENT LANGUAGE
@@ -90,6 +100,11 @@ def grappelli_admin_title():
     return ADMIN_TITLE
 
 
+@register.simple_tag
+def grappelli_clean_input_types():
+    return CLEAN_INPUT_TYPES
+
+
 @register.filter
 def classname(obj, arg=None):
     classname = obj.__class__.__name__.lower()
@@ -98,6 +113,13 @@ def classname(obj, arg=None):
             return True
         return False
     return classname
+
+
+@register.filter
+def classpath(obj):
+    module = obj.__module__
+    classname = obj.__class__.__name__
+    return "%s,%s" % (module, classname)
 
 
 # FORMSETSORT FOR SORTABLE INLINES
@@ -197,3 +219,22 @@ def admin_list_filter(cl, spec):
         'choices': list(spec.choices(cl)),
         'spec': spec,
     }))
+
+
+@register.simple_tag(takes_context=True)
+def switch_user_dropdown(context):
+    if SWITCH_USER:
+        tpl = get_template("admin/includes_grappelli/switch_user_dropdown.html")
+        request = context["request"]
+        session_user = request.session.get("original_user", {"id": request.user.id, "username": request.user.get_username()})
+        try:
+            original_user = User.objects.get(pk=session_user["id"], is_staff=True)
+        except User.DoesNotExist:
+            return ""
+        if SWITCH_USER_ORIGINAL(original_user):
+            object_list = [user for user in User.objects.filter(is_staff=True).exclude(pk=original_user.pk) if SWITCH_USER_TARGET(original_user, user)]
+            return tpl.render({
+                'request': request,
+                'object_list': object_list
+            })
+    return ""
