@@ -197,6 +197,12 @@ class LinkList(DashboardModule):
                     link_dict['external'] = link[2]
                 if len(link) >= 4:
                     link_dict['description'] = link[3]
+                if len(link) >= 5:
+                    target = link[4]
+                    if isinstance(target, bool):
+                        target = '_blank' if target else None
+                    if target:
+                        link_dict['target'] = str(target)
                 new_children.append(link_dict)
             else:
                 new_children.append(link)
@@ -235,7 +241,8 @@ class AppList(DashboardModule, AppListElementMixin):
                 }
             model_dict = {}
             model_dict['title'] = capfirst(model._meta.verbose_name_plural)
-            if perms['change']:
+            if perms['change'] or perms['view']:
+                model_dict['view_only'] = not perms['change']
                 model_dict['admin_url'] = self._get_admin_change_url(model, context)
             if perms['add']:
                 model_dict['add_url'] = self._get_admin_add_url(model, context)
@@ -273,7 +280,8 @@ class ModelList(DashboardModule, AppListElementMixin):
         for model, perms in items:
             model_dict = {}
             model_dict['title'] = capfirst(model._meta.verbose_name_plural)
-            if perms['change']:
+            if perms['change'] or perms['view']:
+                model_dict['view_only'] = not perms['change']
                 model_dict['admin_url'] = self._get_admin_change_url(model, context)
             if perms['add']:
                 model_dict['add_url'] = self._get_admin_add_url(model, context)

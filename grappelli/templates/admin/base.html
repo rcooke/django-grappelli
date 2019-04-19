@@ -33,7 +33,7 @@
                 DATETIME_FORMAT = "{% get_datetime_format %}";
         </script>
         <!-- jQuery, jQuery-UI -->
-        <script src="{% static "grappelli/jquery/jquery-2.1.4.min.js" %}" type="text/javascript"></script>
+        <script src="{% static "grappelli/jquery/jquery.min.js" %}" type="text/javascript"></script>
         <script src="{% static "grappelli/jquery/ui/jquery-ui.min.js" %}" type="text/javascript"></script>
         {% if debug %}
             <!-- Grappelli Main JS -->
@@ -76,7 +76,18 @@
                         <!-- NAVIGATION -->
                         <div id="grp-navigation">
                             {% block branding %}{% endblock %}
-                            {% block admin_title %}<h1 id="grp-admin-title">{% if grappelli_admin_title %}{{ grappelli_admin_title }}{% else %}{% get_admin_title %}{% endif %}</h1>{% endblock %}
+                            {% block admin_title %}
+                                <h1 id="grp-admin-title">
+                                    {% trans "Django administration" as vanilla_site_header %}
+                                    {% if site_header and site_header != vanilla_site_header %}
+                                        {{ site_header|safe }}
+                                    {% elif grappelli_admin_title %}
+                                        {{ grappelli_admin_title }}
+                                    {% else %}
+                                        {% get_admin_title %}
+                                    {% endif %}
+                                </h1>
+                            {% endblock %}
                             {% block user-tools %}
                                 {% if user.is_authenticated and user.is_staff %}
                                     <ul id="grp-user-tools">

@@ -20,7 +20,7 @@
 {% block content %}
     <div class="g-d-c grp-object-history">
         {% if action_list %}
-            <table id="grp-change-history">
+            <table id="grp-change-history" class="grp-table">
                 <thead>
                     <tr>
                         <th scope="col">{% trans 'Date/time' %}</th>
@@ -33,7 +33,7 @@
                         <tr>
                             <th scope="grp-row">{{ action.action_time|date:_("DATETIME_FORMAT") }}</th>
                             <td>{{ action.user.username }}{% if action.user.get_full_name %} ({{ action.user.get_full_name }}){% endif %}</td>
-                            <td>{{ action.change_message }}</td>
+                            <td>{{ action.get_change_message }}</td>
                         </tr>
                     {% endfor %}
                 </tbody>

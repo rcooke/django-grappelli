@@ -5,13 +5,16 @@
 
 // grp jQuery namespace
 var grp = {
-    "jQuery": jQuery.noConflict(true)
+    jQuery: jQuery.noConflict(true)
 };
 
 // django jQuery namespace
 var django = {
-    "jQuery": grp.jQuery.noConflict(true)
+    jQuery: grp.jQuery
 };
+
+// general jQuery instance
+var jQuery = grp.jQuery;
 
 var inputTypes = [
     "[type='search']",
@@ -59,7 +62,7 @@ var inputTypes = [
         // HACK: get rid of text after DateField (hardcoded in django.admin)
         $('p.datetime').each(function() {
             var text = $(this).html();
-            text = text.replace(/^\w*: /, "");
+            text = text.replace(/\w*: /, "");
             text = text.replace(/<br>[^<]*: /g, "<br>");
             $(this).html(text);
         });
@@ -167,6 +170,20 @@ var inputTypes = [
             var url = link.attr('href').split('/');
             pairs = url[url.length-1].replace('?', '').split("&");
             return pairs.join(":");
+        }
+        return false;
+    };
+    grappelli.get_to_field = function(elem) {
+        var link = elem.next("a");
+        if (link.length > 0 && link.attr('href').indexOf("_to_field") !== -1) {
+            var url = link.attr('href').split('/');
+            var pairs = url[url.length-1].replace('?', '').split("&");
+            for (var i = 0; i < pairs.length; i++) {
+                v = pairs[i].split('=');
+                if (v[0] == "_to_field") {
+                    return v[1];
+                }
+            }
         }
         return false;
     };

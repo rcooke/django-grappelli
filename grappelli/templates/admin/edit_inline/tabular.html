@@ -1,4 +1,4 @@
-{% load i18n grp_tags admin_urls %}
+{% load i18n grp_tags static admin_urls %}
 
 <!-- group -->
 <div class="inline-group grp-group grp-tabular{% if inline_admin_formset.opts.classes %} {{ inline_admin_formset.opts.classes|join:" " }}{% endif %}"
@@ -15,7 +15,10 @@
             <div class="grp-tr">
                 {% for field in inline_admin_formset.fields %}
                     {% if not field.widget.is_hidden %}
-                        <div class="grp-th {{ field.label|lower|slugify }}{% if field.required %} required{% endif %}">{{ field.label|capfirst }}</div>
+                        <div class="grp-th {{ field.label|lower|slugify }}{% if field.required %} required{% endif %}">
+                            {{ field.label|capfirst }}
+                            {% if field.help_text %}&nbsp;<img src="{% static "admin/img/icon-unknown.svg" %}" class="grp-help-tooltip" width="12" height="12" alt="({{ field.help_text|striptags }})" title="{{ field.help_text|striptags }}" />{% endif %}
+                        </div>
                     {% endif %}
                 {% endfor %}
                 {% if inline_admin_formset.formset.can_delete %}<div class="grp-th">&nbsp;</div>{% endif %}
@@ -24,8 +27,8 @@
         {% with inline_admin_formset.opts.sortable_field_name|default:"" as sortable_field_name %}
         {% for inline_admin_form in inline_admin_formset|formsetsort:sortable_field_name %}
             <!-- element -->
-            <div class="form-row grp-module grp-tbody{% if inline_admin_form.original or inline_admin_form.show_url %} has_original{% endif %}{% if forloop.last %} grp-empty-form{% endif %}"
-                id="{{ inline_admin_formset.formset.prefix }}{% if not forloop.last %}{{ forloop.counter0 }}{% else %}-empty{% endif %}">
+            <div class="form-row grp-module grp-tbody{% if inline_admin_form.original or inline_admin_form.show_url %} has_original{% endif %}{% if forloop.last and inline_admin_formset.has_add_permission %} grp-empty-form{% endif %}"
+                id="{{ inline_admin_formset.formset.prefix }}{% if forloop.last and inline_admin_formset.has_add_permission %}-empty{% else %}{{ forloop.counter0 }}{% endif %}">
                 {% if inline_admin_form.form.non_field_errors %}
                     {{ inline_admin_form.form.non_field_errors }}
                 {% endif %}
@@ -51,7 +54,7 @@
                                             {{ field.field }}
                                             {{ field.field.errors.as_ul }}
                                         {% endif %}
-                                        {% if field.field.help_text %}<p class="grp-help">{{ field.field.help_text }}</p>{% endif %}
+                                        {% comment %}{% if field.field.help_text %}<p class="grp-help">{{ field.field.help_text }}</p>{% endif %}{% endcomment %}
                                     </div>
                                 {% endif %}
                             {% endfor %}
@@ -60,10 +63,12 @@
                     <div class="grp-td grp-tools-container">
                         {% spaceless %}
                         <ul class="grp-tools">
-                            {% comment %}
-                            {% if inline_admin_form.original and inline_admin_form.model_admin.show_change_link and inline_admin_form.model_admin.has_registered_model %}<li><a href="{% url inline_admin_form.model_admin.opts|admin_urlname:'change' inline_admin_form.original.pk|admin_urlquote %}" class="grp-icon grp-change-link"></a></li>{% endif %}
-                            {% endcomment %}
-                            {% if inline_admin_form.show_url %}<li><a href="{% url 'admin:view_on_site' inline_admin_form.original_content_type_id inline_admin_form.original.pk %}" class="grp-icon grp-viewsite-link" title="{% trans 'View on Site' %}" target="_blank"></a></li>{% endif %}
+                            {% if inline_admin_form.original %}
+                                {% if inline_admin_form.model_admin.show_change_link and inline_admin_form.model_admin.has_registered_model %}
+                                    <li><a href="{% url inline_admin_form.model_admin.opts|admin_urlname:'change' inline_admin_form.original.pk|admin_urlquote %}" class="grp-icon grp-edit-link" title="{% trans 'Change' %}"></a></li>
+                                {% endif %}
+                            {% endif %}
+                            {% if inline_admin_form.show_url %}<li><a href="{{ inline_admin_form.absolute_url }}" class="grp-icon grp-viewsite-link" title="{% trans 'View on Site' %}" target="_blank"></a></li>{% endif %}
                             {% if inline_admin_formset.opts.sortable_field_name %}
                                 <li><a href="javascript://" class="grp-icon grp-drag-handler" title="{% trans 'Move Item' %}"></a></li>
                             {% endif %}

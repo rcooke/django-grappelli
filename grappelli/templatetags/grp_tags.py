@@ -17,7 +17,6 @@ from django.utils.formats import get_format
 from django.utils.safestring import mark_safe
 from django.utils.translation import get_language
 from django.template.loader import get_template
-from django.template.context import Context
 from django.utils.translation import ugettext as _
 
 # grappelli imports
@@ -131,16 +130,17 @@ def formsetsort(formset, arg):
     """
     if arg:
         sorted_list = []
+        unsorted_list = []
         for item in formset:
-            position = item.form[arg].data
-            if position and position != "-1":
+            position = item.form[arg].value()
+            if isinstance(position, int) and item.original:  # normal view
+                sorted_list.append((position, item))
+            elif position and hasattr(item.form, 'cleaned_data'):  # error validation
                 sorted_list.append((int(position), item))
-        sorted_list.sort()
-        sorted_list = [item[1] for item in sorted_list]
-        for item in formset:
-            position = item.form[arg].data
-            if not position or position == "-1":
-                sorted_list.append(item)
+            else:
+                unsorted_list.append(item)
+        sorted_list.sort(key=lambda i: i[0])
+        sorted_list = [item[1] for item in sorted_list] + unsorted_list
     else:
         sorted_list = formset
     return sorted_list
@@ -214,11 +214,11 @@ def admin_list_filter(cl, spec):
         tpl = get_template(cl.model_admin.change_list_filter_template)
     except:
         tpl = get_template(spec.template)
-    return tpl.render(Context({
+    return tpl.render({
         'title': spec.title,
         'choices': list(spec.choices(cl)),
         'spec': spec,
-    }))
+    })
 
 
 @register.simple_tag(takes_context=True)

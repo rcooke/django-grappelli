@@ -18,6 +18,8 @@ from django.core.exceptions import PermissionDenied
 from django.contrib.admin.utils import prepare_lookup_value
 from django.core.serializers.json import DjangoJSONEncoder
 from django.apps import apps
+from django.contrib import admin
+from django.utils.safestring import SafeText
 
 # GRAPPELLI IMPORTS
 from grappelli.settings import AUTOCOMPLETE_LIMIT, AUTOCOMPLETE_SEARCH_FIELDS
@@ -27,6 +29,13 @@ def get_label(f):
     if getattr(f, "related_label", None):
         return f.related_label()
     return smart_text(f)
+
+
+def get_label_safe(f):
+    if getattr(f, "related_label", None):
+        if isinstance(f.related_label(), SafeText):
+            return True
+    return False
 
 
 def import_from(module, name):
@@ -72,6 +81,13 @@ class RelatedLookup(View):
             self.model = None
         return self.model
 
+    # def get_model_admin(self):
+    #     model = self.get_model()
+    #     if model is not None:
+    #         if model in admin.site._registry:
+    #             return admin.site._registry[model]
+    #     return None
+
     def get_filtered_queryset(self, qs):
         filters = {}
         query_string = self.GET.get('query_string', None)
@@ -85,18 +101,34 @@ class RelatedLookup(View):
 
     def get_queryset(self):
         qs = self.model._default_manager.get_queryset()
+        # model_admin = self.get_model_admin()
+        # if model_admin is not None:
+        #     qs = model_admin.get_queryset(self.request)
         qs = self.get_filtered_queryset(qs)
         return qs
 
+    def get_return_value(self, obj, obj_id):
+        to_field = self.GET.get('to_field', None)
+        if to_field is not None:
+            return_value = getattr(obj, to_field)
+            if not isinstance(return_value, str) and not isinstance(return_value, int):
+                return_value = obj.pk
+            return return_value
+        return obj_id
+
     def get_data(self):
         obj_id = self.GET['object_id']
+        to_field = self.GET.get('to_field', None)
         data = []
         if obj_id:
             try:
-                obj = self.get_queryset().get(pk=obj_id)
-                data.append({"value": obj_id, "label": get_label(obj)})
+                if to_field is not None:
+                    obj = self.get_queryset().get(**{to_field: obj_id})
+                else:
+                    obj = self.get_queryset().get(pk=obj_id)
+                data.append({"value": "%s" % self.get_return_value(obj, obj_id), "label": get_label(obj), "safe": get_label_safe(obj)})
             except (self.model.DoesNotExist, ValueError):
-                data.append({"value": obj_id, "label": _("?")})
+                data.append({"value": obj_id, "label": _("?"), "safe": False})
         return data
 
     @never_cache
@@ -124,9 +156,9 @@ class M2MLookup(RelatedLookup):
         for obj_id in (i for i in obj_ids if i):
             try:
                 obj = self.get_queryset().get(pk=obj_id)
-                data.append({"value": obj_id, "label": get_label(obj)})
+                data.append({"value": obj_id, "label": get_label(obj), "safe": get_label_safe(obj)})
             except (self.model.DoesNotExist, ValueError):
-                data.append({"value": obj_id, "label": _("?")})
+                data.append({"value": obj_id, "label": _("?"), "safe": False})
         return data
 
 
@@ -147,12 +179,15 @@ class AutocompleteLookup(RelatedLookup):
 
         search_fields = get_autocomplete_search_fields(self.model)
         if search_fields:
+            search = models.Q()
             for word in term.split():
-                search = [models.Q(**{smart_text(item): smart_text(word)}) for item in search_fields]
-                search_qs = QuerySet(model)
-                search_qs.query.select_related = qs.query.select_related
-                search_qs = search_qs.filter(reduce(operator.or_, search))
-                qs &= search_qs
+                term_query = models.Q()
+                for search_field in search_fields:
+                    term_query |= models.Q(
+                        **{smart_text(search_field): smart_text(word)}
+                    )
+                search &= term_query
+            qs = qs.filter(search)
         else:
             qs = model.objects.none()
         return qs
@@ -185,7 +220,7 @@ class AutocompleteLookup(RelatedLookup):
             for part in lookup.lstrip('-').split(LOOKUP_SEP):
                 field = opts.get_field(part)
                 if field.is_relation:
-                    opts = field.rel.to._meta
+                    opts = field.related_model._meta
             if previous_lookup_parts is not None:
                 lookup = previous_lookup_parts + LOOKUP_SEP + lookup
             if field.is_relation:
@@ -210,7 +245,7 @@ class AutocompleteLookup(RelatedLookup):
         return qs.distinct()
 
     def get_data(self):
-        return [{"value": f.pk, "label": get_label(f)} for f in self.get_queryset()[:AUTOCOMPLETE_LIMIT]]
+        return [{"value": self.get_return_value(f, f.pk), "label": get_label(f)} for f in self.get_queryset()[:AUTOCOMPLETE_LIMIT]]
 
     @never_cache
     def get(self, request, *args, **kwargs):

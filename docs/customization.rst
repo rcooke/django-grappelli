@@ -14,7 +14,7 @@ Available Settings
 ------------------
 
 ``GRAPPELLI_ADMIN_TITLE``
-    The Site Title of your admin interface. Change this instead of changing index.html
+    The Site Title of your admin interface. Change this instead of changing index.html.
 
 ``GRAPPELLI_AUTOCOMPLETE_LIMIT``
     Number of items to show with autocomplete drop–downs.
@@ -41,7 +41,7 @@ Available Settings
 Collapsibles
 ------------
 
-Use the ``classes`` property in order to define collapsibles for a `ModelAdmin <http://docs.djangoproject.com/en/1.9/ref/contrib/admin/#modeladmin-objects>`_ or an `InlineModelAdmin <http://docs.djangoproject.com/en/1.9/ref/contrib/admin/#inlinemodeladmin-objects>`_. Possible values are ``grp-collapse grp-open`` and ``grp-collapse grp-closed``:
+Use the ``classes`` property in order to define collapsibles for a `ModelAdmin <http://docs.djangoproject.com/en/1.11/ref/contrib/admin/#modeladmin-objects>`_ or an `InlineModelAdmin <http://docs.djangoproject.com/en/1.11/ref/contrib/admin/#inlinemodeladmin-objects>`_. Possible values are ``grp-collapse grp-open`` and ``grp-collapse grp-closed``:
 
 .. code-block:: python
 
@@ -66,7 +66,7 @@ Use the ``classes`` property in order to define collapsibles for a `ModelAdmin <
     class TabularItemInline(admin.TabularInline):
         classes = ('grp-collapse grp-open',)
 
-With `StackedInlines <https://docs.djangoproject.com/en/1.9/ref/contrib/admin/#django.contrib.admin.StackedInline>`_, an additional property ``inline_classes`` is available to define the default collapsible state of inline items (as opposed to the inline group):
+With `StackedInlines <https://docs.djangoproject.com/en/1.11/ref/contrib/admin/#django.contrib.admin.StackedInline>`_, an additional property ``inline_classes`` is available to define the default collapsible state of inline items (as opposed to the inline group):
 
 .. code-block:: python
 
@@ -375,7 +375,7 @@ Example in Python 3:
 Using TinyMCE
 -------------
 
-|grappelli| already comes with TinyMCE and a minimal theme as well. In order to use TinyMCE, copy ``tinymce_setup.js`` to your static directory, adjust the setup (see `TinyMCE Configuration <http://www.tinymce.com/wiki.php/Configuration>`_) and add the necessary javascripts to your ModelAdmin definition (see `ModelAdmin Media definitions <https://docs.djangoproject.com/en/1.4/ref/contrib/admin/#modeladmin-media-definitions>`_):
+|grappelli| already comes with TinyMCE and a minimal theme as well. In order to use TinyMCE, copy ``tinymce_setup.js`` to your static directory, adjust the setup (see `TinyMCE Configuration <http://www.tinymce.com/wiki.php/Configuration>`_) and add the necessary javascripts to your ModelAdmin definition (see `ModelAdmin asset definitions <https://docs.djangoproject.com/en/1.11/ref/contrib/admin/#modeladmin-asset-definitions>`_):
 
 .. code-block:: python
 
@@ -436,8 +436,8 @@ You sometimes might need to see the admin interface as a different user (e.g. in
 .. warning::
     If you are using a custom user model and want to turn this feature on, pay attention to the following topics:
 
-    * if ``is_superuser`` is neither a field nor a property of your user model, you will have to set both ``GRAPPELLI_SWITCH_USER_ORIGINAL`` and ``GRAPPELLI_SWITCH_USER_TARGET`` to functions; failing to do so will break the admin area. If you followed the instructions in the `Django docs <https://docs.djangoproject.com/en/1.9/topics/auth/customizing/#a-full-example>`_, ``is_superuser`` won't be a field nor a property of your user model. If you define ``is_superuser`` as a property of your model, the admin area will get back to work.
-    * if ``is_staff`` is not a field, and/or ``is_superuser`` is neither a field nor a property of your user model, the Grappelli tests will be broken (because e.g. of some ``user.is_staff = True`` instructions). This -again- is your case if you followed the `Django docs on customizing user model <https://docs.djangoproject.com/en/1.9/topics/auth/customizing/#a-full-example>`_, where ``is_staff`` is defined as a property (as opposite to a field).
+    * if ``is_superuser`` is neither a field nor a property of your user model, you will have to set both ``GRAPPELLI_SWITCH_USER_ORIGINAL`` and ``GRAPPELLI_SWITCH_USER_TARGET`` to functions; failing to do so will break the admin area. If you followed the instructions in the `Django docs <https://docs.djangoproject.com/en/1.11/topics/auth/customizing/#a-full-example>`_, ``is_superuser`` won't be a field nor a property of your user model. If you define ``is_superuser`` as a property of your model, the admin area will get back to work.
+    * if ``is_staff`` is not a field, and/or ``is_superuser`` is neither a field nor a property of your user model, the Grappelli tests will be broken (because e.g. of some ``user.is_staff = True`` instructions). This -again- is your case if you followed the `Django docs on customizing user model <https://docs.djangoproject.com/en/1.11/topics/auth/customizing/#a-full-example>`_, where ``is_staff`` is defined as a property (as opposite to a field).
 
 
 .. _cleaninputtypes:

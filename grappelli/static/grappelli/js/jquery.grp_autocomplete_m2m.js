@@ -33,6 +33,10 @@
                 if ($this.parent().find("ul.errorlist")) {
                     $this.parent().find("ul.errorlist").detach().appendTo($this.parent().parent());
                 }
+                // move helptext outside the wrapper
+                if ($this.parent().find("p.grp-help")) {
+                    $this.parent().find("p.grp-help").detach().appendTo($this.parent().parent());
+                }
                 // lookup
                 lookup_id($this, options);  // lookup when loading page
                 lookup_autocomplete($this, options);  // autocomplete-handler
@@ -101,7 +105,7 @@
 
     var repr_add = function(elem, label, options) {
         var repr = $('<li class="grp-repr"></li>');
-        var removelink = $('<a class="grp-m2m-remove" href="javascript://">' + label + '</a>');
+        var removelink = $('<a class="grp-m2m-remove" href="javascript://"></a>').text(label);
         repr.append(removelink);
         repr.insertBefore(options.wrapper_search);
         removelink.bind("click", function(e) { // remove-handler
@@ -168,14 +172,14 @@
             })
             .data("ui-autocomplete")._renderItem = function(ul,item) {
                 if (!item.value) {
-                    return $("<li></li>")
+                    return $("<li class='ui-state-disabled'></li>")
                         .data( "item.autocomplete", item )
-                        .append( "<span class='error'>" + item.label + "</span>")
+                        .append($("<span class='error'></span>").text(item.label))
                         .appendTo(ul);
                 } else {
                     return $("<li></li>")
                         .data( "item.autocomplete", item )
-                        .append( "<a>" + item.label + "</a>")
+                        .append($("<a></a>").text(item.label))
                         .appendTo(ul);
                 }
             };

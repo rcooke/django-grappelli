@@ -7,7 +7,7 @@ Module where grappelli dashboard classes are defined.
 # DJANGO IMPORTS
 from django.utils import six
 from django.utils.translation import ugettext_lazy as _
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 from django import forms
 
 # GRAPPELLI IMPORTS
@@ -55,7 +55,7 @@ class Dashboard(six.with_metaclass(forms.MediaDefiningClass)):
 
     Here's an example of a custom dashboard::
 
-        from django.core.urlresolvers import reverse
+        from django.urls import reverse
         from django.utils.translation import ugettext_lazy as _
         from admin_tools.dashboard import modules, Dashboard
 
@@ -171,11 +171,13 @@ class DefaultIndexDashboard(Dashboard):
                     'title': _('Django documentation'),
                     'url': 'http://docs.djangoproject.com/',
                     'external': True,
+                    'target': '_blank',
                 },
                 {
                     'title': _('Django "django-users" mailing list'),
                     'url': 'http://groups.google.com/group/django-users',
                     'external': True,
+                    'target': True,  # ~= open in new window: True
                 },
                 {
                     'title': _('Django irc channel'),

@@ -1,5 +1,5 @@
 {% extends "admin/base_site.html" %}
-{% load i18n admin_urls %}
+{% load i18n l10n admin_urls %}
 
 {% block breadcrumbs %}
     <ul>
@@ -16,7 +16,7 @@
             <p>{% blocktrans %}Choose a date from the list below to recover a deleted version of an object.{% endblocktrans %}</p>
         </div>
         {% if deleted %}
-            <table id="grp-change-history">
+            <table id="grp-change-history" class="grp-table">
                 <thead>
                     <tr>
                         <th scope="col">{% trans 'Date/time' %}</th>
@@ -26,7 +26,7 @@
                 <tbody>
                     {% for deletion in deleted %}
                         <tr>
-                            <th scope="grp-row"><a href="{{ deletion.pk }}/">{{ deletion.revision.date_created }}</a></th>
+                            <th scope="grp-row"><a href="{{ deletion.pk|unlocalize }}/">{{ deletion.revision.date_created }}</a></th>
                             <td>{{ deletion.object_repr }}</td>
                         </tr>
                     {% endfor %}

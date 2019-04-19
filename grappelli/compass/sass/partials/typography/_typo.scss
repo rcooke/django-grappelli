@@ -41,6 +41,18 @@ p.grp-help {
 }
 
 
+/*  Help Tooltip ......................................... */
+
+img.grp-help-tooltip {
+    opacity: .5;
+    .grp-table & {
+        position: absolute;
+        right: 18px;
+        top: 3px;
+    }
+}
+
+
 /*  Description ......................................... */
 
 .grp-description {
