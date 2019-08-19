@@ -35,6 +35,10 @@ MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
 ]
 
+MIGRATION_MODULES = {
+    'grappelli': 'grappelli.tests.migrations'
+}
+
 ROOT_URLCONF = 'grappelli.tests.urls'
 LANGUAGE_CODE = 'en-us'
 TIME_ZONE = 'UTC'
